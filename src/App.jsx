@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import { createClient } from '@supabase/supabase-js'
 
 const defaultTasks = [
   { id: 1, name: 'Task 1', done: true, emoji: '🧨' },
@@ -7,7 +7,7 @@ const defaultTasks = [
 ]
 function App() {
   /* aca */
-  const [tasks, setTasks] = useState(defaultTasks);
+  const [tasks, setTasks] = useState([]);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('');
 
@@ -30,16 +30,22 @@ function App() {
     setEmoji(e.target.value);
   }
 
+  const supabaseUrl = 'https://egzjoaazfegtkolimoji.supabase.co'
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnempvYWF6ZmVndGtvbGltb2ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDgxMTI2ODEsImV4cCI6MjAyMzY4ODY4MX0.gXHZUm5KvBdYr1lvy9wYSTb8Qk8zsrrR-NkRF1Hv7XM"
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
   const handleStatusChange = (id) => {
-    console.log('cambiando estado de la tarea', id);
-    const newTasks = tasks.map(t => {
-      if (t.id === id) {
-        t.done = !t.done;
-      }
-      return t;
+    const task = tasks.find(t => t.id === id);
+    task.finished_at = task.finished_at ? null : new Date().toISOString();
+    supabase.from('tasks').upsert([task]).select().then(response => {
+      setTasks(response.data);
     });
-    setTasks(newTasks);
   }
+
+  const { data } = supabase.from('tasks').select().then(response => {
+    setTasks(response.data);
+  })
+
 
   return (
     <>
@@ -52,9 +58,9 @@ function App() {
         {
           tasks.map(t => {
             return (
-              <div key={t.id} class={`item ${t.done ? 'done' : 'not-done'}`}>
-                <p>#{t.id} <strong>{t.name}</strong> {t.emoji}</p>
-                <div onClick={() => handleStatusChange(t.id)} class="icon">{t.done ? "✅" : "❌"}</div>
+              <div key={t.id} className={`item ${t.finished_at ? 'done' : 'not-done'}`}>
+                <p>#{t.id} <strong>{t.name}</strong></p>
+                <div onClick={() => handleStatusChange(t.id)} className="icon">{t.finished_at ? "✅" : "❌"}</div>
               </div>
             );
           })
