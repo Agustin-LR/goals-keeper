@@ -1,5 +1,6 @@
 import { useState } from 'react'
-
+import TaskContainer from './TaskContainer';
+import CheckBoxIcon from './CheckBoxIcon';
 
 const defaultTasks = [
   { id: 1, name: 'Task 1', done: true, emoji: '🧨' },
@@ -60,6 +61,8 @@ function App() {
           })
         }
       </section>
+      <CheckBoxIcon checked />
+      <TaskContainer />
     </>
   );
 }
